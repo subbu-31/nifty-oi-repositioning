@@ -1,0 +1,10 @@
+# Tested with these exact versions. Nothing here depends on bleeding-edge-only
+# APIs, so nearby versions should work too -- these are pinned for maximum
+# reproducibility, not because the code is fragile to version drift.
+pandas==3.0.2
+numpy==2.4.4
+scipy==1.17.1
+scikit-learn==1.8.0
+matplotlib==3.10.9
+statsmodels==0.15.0
+pyarrow==25.0.1
