@@ -1,0 +1,50 @@
+name: CI
+
+# This repository cannot run its analysis in CI: every script needs licensed
+# option-chain archives that are not redistributable. What CI checks here is
+# narrower and stated plainly -- that the code installs, imports, and
+# byte-compiles on a clean machine, so a reader who does supply the data is
+# not fighting an import error or a stale path before they start.
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Byte-compile every script
+        run: python -m compileall -q lib scripts run_all.py
+
+      - name: Import every library module
+        run: |
+          python - <<'PY'
+          import importlib, pkgutil
+          import lib
+          for m in pkgutil.iter_modules(lib.__path__):
+              importlib.import_module(f"lib.{m.name}")
+              print("ok", m.name)
+          PY
+
+      - name: Check the section runner agrees with the scripts on disk
+        run: python run_all.py --list
